@@ -1,0 +1,23 @@
+{
+  "excluded": [],
+  "failed": [
+    {
+      "describe": "build/1",
+      "file": "/Users/rogerpoliver/repos/rocketseat/elixir-01-ch03/test/gen_report_test.exs",
+      "line": 10,
+      "module": "Elixir.GenReportTest",
+      "test": "test build/1 When passing file name return a report"
+    }
+  ],
+  "invalid": [],
+  "passed": [
+    {
+      "describe": "build/1",
+      "file": "/Users/rogerpoliver/repos/rocketseat/elixir-01-ch03/test/gen_report_test.exs",
+      "line": 16,
+      "module": "Elixir.GenReportTest",
+      "test": "test build/1 When no filename was given, returns an error"
+    }
+  ],
+  "skiped": []
+}
