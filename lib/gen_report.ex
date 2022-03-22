@@ -1,21 +1,6 @@
 defmodule GenReport do
   alias GenReport.Parser
 
-  # defp report_vazio() do
-  #   %{
-  #     "cleiton" => 0,
-  #     "daniele" => 0,
-  #     "danilo" => 0,
-  #     "diego" => 0,
-  #     "giuliano" => 0,
-  #     "jakeliny" => 0,
-  #     "joseph" => 0,
-  #     "mayk" => 0,
-  #     "rafael" => 0,
-  #     "vinicius" => 0
-  #   }
-  # end
-
   @names [
     "cleiton",
     "daniele",
@@ -29,56 +14,116 @@ defmodule GenReport do
     "vinicius"
   ]
 
+  @months [
+    "abril",
+    "agosto",
+    "dezembro",
+    "fevereiro",
+    "janeiro",
+    "julho",
+    "junho",
+    "maio",
+    "março",
+    "novembro",
+    "outubro",
+    "setembro"
+  ]
+
+  @years [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020
+  ]
+
   def build(filename) do
     filename
     |> Parser.parse_file()
-    |> Enum.reduce(report_struct(), fn line, report -> get_hours(line, report) end)
+    |> Enum.reduce(
+      get_report_struct(),
+      fn line, report -> merge_hours(line, report) end
+    )
   end
 
   def build() do
     {:error, "Insira o nome de um arquivo"}
   end
 
-  defp get_hours([name, hours, _day, _month, _year], %{"all_hours" => names} = report) do
-    names = Map.put(names, name, names[name] + hours)
-    %{report | "all_hours" => names}
+  defp merge_hours(line, report_struct) do
+    %{
+      "all_hours" => all_hours,
+      "hours_per_month" => hours_per_month,
+      "hours_per_year" => hours_per_year
+    } = report_struct
+
+    %{
+      report_struct
+      | "all_hours" => get_hours(line, all_hours),
+        "hours_per_month" => get_hours_per_month(line, hours_per_month),
+        "hours_per_year" => get_hours_per_year(line, hours_per_year)
+    }
   end
 
-  defp report_struct() do
-    names = Enum.into(@names, %{}, &{&1, 0})
-    %{"all_hours" => names}
+  defp get_hours(line, all_hours_map) do
+    [name, hours, _day, _month, _year] = line
+
+    Map.put(
+      all_hours_map,
+      name,
+      all_hours_map[name] + hours
+    )
+  end
+
+  defp get_hours_per_month(line, hours_per_month_map) do
+    [name, hours, _day, month, _year] = line
+    months_map = hours_per_month_map[name]
+
+    new_months_map =
+      Map.put(
+        months_map,
+        month,
+        months_map[month] + hours
+      )
+
+    Map.put(
+      hours_per_month_map,
+      name,
+      new_months_map
+    )
+  end
+
+  defp get_hours_per_year(line, hours_per_year_map) do
+    [name, hours, _day, _month, year] = line
+    years_map = hours_per_year_map[name]
+
+    new_years_map =
+      Map.put(
+        years_map,
+        year,
+        years_map[year] + hours
+      )
+
+    Map.put(
+      hours_per_year_map,
+      name,
+      new_years_map
+    )
+  end
+
+  defp get_report_struct() do
+    all_hours = Enum.into(@names, %{}, fn x -> {x, 0} end)
+
+    months = Enum.into(@months, %{}, fn x -> {x, 0} end)
+    hours_per_month = Enum.into(@names, %{}, fn x -> {x, months} end)
+
+    years = Enum.into(@years, %{}, fn x -> {x, 0} end)
+    hours_per_year = Enum.into(@names, %{}, fn x -> {x, years} end)
+
+    %{
+      "all_hours" => all_hours,
+      "hours_per_month" => hours_per_month,
+      "hours_per_year" => hours_per_year
+    }
   end
 end
-
-# Retornar ->
-# %{
-#   all_hours: %{
-#         danilo: 500,
-#         rafael: 854,
-#         ...
-#     },
-#   hours_per_month: %{
-#         danilo: %{
-#             janeiro: 40,
-#             fevereiro: 64,
-#             ...
-#         },
-#         rafael: %{
-#             janeiro: 52,
-#             fevereiro: 37,
-#             ...
-#         }
-#     },
-#   hours_per_year: %{
-#         danilo: %{
-#             2016: 276,
-#             2017: 412,
-#             ...
-#         },
-#         rafael: %{
-#             2016: 376,
-#             2017: 348,
-#             ...
-#         }
-#     }
-# }
