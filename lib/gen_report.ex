@@ -41,8 +41,8 @@ defmodule GenReport do
     filename
     |> Parser.parse_file()
     |> Enum.reduce(
-      get_report_struct(),
-      fn line, report -> merge_hours(line, report) end
+      get_accumulator_struct(),
+      fn line, accumulator -> merge_hours(line, accumulator) end
     )
   end
 
@@ -50,15 +50,15 @@ defmodule GenReport do
     {:error, "Insira o nome de um arquivo"}
   end
 
-  defp merge_hours(line, report_struct) do
+  defp merge_hours(line, accumulator) do
     %{
       "all_hours" => all_hours,
       "hours_per_month" => hours_per_month,
       "hours_per_year" => hours_per_year
-    } = report_struct
+    } = accumulator
 
     %{
-      report_struct
+      accumulator
       | "all_hours" => get_hours(line, all_hours),
         "hours_per_month" => get_hours_per_month(line, hours_per_month),
         "hours_per_year" => get_hours_per_year(line, hours_per_year)
@@ -111,7 +111,7 @@ defmodule GenReport do
     )
   end
 
-  defp get_report_struct() do
+  defp get_accumulator_struct() do
     all_hours = Enum.into(@names, %{}, fn x -> {x, 0} end)
 
     months = Enum.into(@months, %{}, fn x -> {x, 0} end)
